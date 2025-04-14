@@ -1,0 +1,11 @@
+POST http://localhost:8080/env
+Content-Type: application/json
+
+{
+  "name": "FIRST_ENV",
+  "description": "desc"
+}
+
+
+### Get req
+GET http://localhost:8080/env
