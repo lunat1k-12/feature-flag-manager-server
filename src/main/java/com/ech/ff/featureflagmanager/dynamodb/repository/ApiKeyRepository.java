@@ -4,6 +4,9 @@ import com.ech.ff.featureflagmanager.dynamodb.entity.ApiKey;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
+import software.amazon.awssdk.enhanced.dynamodb.Key;
+import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
+import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
 
 import java.util.List;
 
@@ -19,6 +22,14 @@ public class ApiKeyRepository {
     }
 
     public List<ApiKey> getEnvKeys(String envName) {
-        return null;
+        QueryConditional queryConditional = QueryConditional.keyEqualTo(
+                Key.builder().partitionValue(envName).build()
+        );
+
+        QueryEnhancedRequest request = QueryEnhancedRequest.builder()
+                .queryConditional(queryConditional)
+                .build();
+
+        return dynamoDbTable.query(request).items().stream().toList();
     }
 }

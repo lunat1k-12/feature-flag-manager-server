@@ -9,3 +9,16 @@ Content-Type: application/json
 
 ### Get req
 GET http://localhost:8080/env
+
+
+### ENV requests
+POST http://localhost:8080/env/key
+Content-Type: application/json
+
+{
+  "env": "second_ENV"
+}
+
+
+### GET keys
+GET http://localhost:8080/env/key/second_ENV

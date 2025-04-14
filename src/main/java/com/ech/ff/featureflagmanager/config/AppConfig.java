@@ -1,6 +1,8 @@
 package com.ech.ff.featureflagmanager.config;
 
+import com.ech.ff.featureflagmanager.dynamodb.entity.ApiKey;
 import com.ech.ff.featureflagmanager.dynamodb.entity.Environment;
+import com.ech.ff.featureflagmanager.dynamodb.repository.ApiKeyRepository;
 import com.ech.ff.featureflagmanager.dynamodb.repository.EnvironmentRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,5 +31,10 @@ public class AppConfig {
     @Bean
     public EnvironmentRepository buildEnvironmentRepository(DynamoDbEnhancedClient client) {
         return new EnvironmentRepository(client.table("Environment", TableSchema.fromBean(Environment.class)));
+    }
+
+    @Bean
+    public ApiKeyRepository buildApiKeyRepository(DynamoDbEnhancedClient client) {
+        return new ApiKeyRepository(client.table("EnvApiKey", TableSchema.fromBean(ApiKey.class)));
     }
 }

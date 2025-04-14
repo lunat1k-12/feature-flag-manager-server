@@ -17,16 +17,17 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbParti
 @DynamoDbBean
 public class ApiKey {
 
-    private String id;
+    private String key;
     private String envName;
     private Boolean active;
 
-    @DynamoDbPartitionKey
-    @DynamoDbAttribute("id")
-    public String getId() {
-        return id;
+
+    @DynamoDbAttribute("key")
+    public String getKey() {
+        return key;
     }
 
+    @DynamoDbPartitionKey
     @DynamoDbAttribute("EnvName")
     public String getEnvName() {
         return envName;
