@@ -16,17 +16,12 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortK
 @ToString
 @Setter
 @DynamoDbBean
-public class ApiKey {
+public class FeatureFlag {
 
-    private String key;
     private String envName;
-    private Boolean active;
-
-    @DynamoDbSortKey
-    @DynamoDbAttribute("key")
-    public String getKey() {
-        return key;
-    }
+    private String type;
+    private String featureName;
+    private String config;
 
     @DynamoDbPartitionKey
     @DynamoDbAttribute("EnvName")
@@ -34,8 +29,19 @@ public class ApiKey {
         return envName;
     }
 
-    @DynamoDbAttribute("active")
-    public Boolean getActive() {
-        return active;
+    @DynamoDbAttribute("type")
+    public String getType() {
+        return type;
+    }
+
+    @DynamoDbSortKey
+    @DynamoDbAttribute("FeatureName")
+    public String getFeatureName() {
+        return featureName;
+    }
+
+    @DynamoDbAttribute("config")
+    public String getConfig() {
+        return config;
     }
 }

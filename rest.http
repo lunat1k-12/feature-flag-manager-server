@@ -16,9 +16,12 @@ POST http://localhost:8080/env/key
 Content-Type: application/json
 
 {
-  "env": "second_ENV"
+  "env": "FIRST_ENV"
 }
 
 
 ### GET keys
-GET http://localhost:8080/env/key/second_ENV
+GET http://localhost:8080/env/key/FIRST_ENV
+
+### Delete key
+DELETE http://localhost:8080/env/key/FIRST_ENV/238a33d3-0651-4517-9a89-04555933a69b

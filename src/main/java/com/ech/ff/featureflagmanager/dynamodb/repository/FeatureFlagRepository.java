@@ -1,8 +1,8 @@
 package com.ech.ff.featureflagmanager.dynamodb.repository;
 
 import com.ech.ff.featureflagmanager.dynamodb.entity.ApiKey;
+import com.ech.ff.featureflagmanager.dynamodb.entity.FeatureFlag;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
@@ -10,18 +10,23 @@ import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
 
 import java.util.List;
 
-@Slf4j
 @RequiredArgsConstructor
-public class ApiKeyRepository {
+public class FeatureFlagRepository {
 
-    private final DynamoDbTable<ApiKey> dynamoDbTable;
+    private final DynamoDbTable<FeatureFlag> dynamoDbTable;
 
-    public void save(ApiKey apiKey) {
-        log.info("Save new API key: {}", apiKey);
-        dynamoDbTable.putItem(apiKey);
+    public void save(FeatureFlag ff) {
+        dynamoDbTable.putItem(ff);
     }
 
-    public List<ApiKey> getEnvKeys(String envName) {
+    public FeatureFlag getByName(String name, String envName) {
+        return dynamoDbTable.getItem(FeatureFlag.builder()
+                        .featureName(name)
+                        .envName(envName)
+                .build());
+    }
+
+    public List<FeatureFlag> getEnvFF(String envName) {
         QueryConditional queryConditional = QueryConditional.keyEqualTo(
                 Key.builder().partitionValue(envName).build()
         );
@@ -33,9 +38,9 @@ public class ApiKeyRepository {
         return dynamoDbTable.query(request).items().stream().toList();
     }
 
-    public void deleteKey(String key, String envName) {
-        dynamoDbTable.deleteItem(ApiKey.builder()
-                        .key(key)
+    public void deleteFF(String name, String envName) {
+        dynamoDbTable.deleteItem(FeatureFlag.builder()
+                        .featureName(name)
                         .envName(envName)
                 .build());
     }
