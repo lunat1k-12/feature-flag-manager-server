@@ -1,42 +1,59 @@
 package com.ech.ff.featureflagmanager.dynamodb.repository;
 
 import com.ech.ff.featureflagmanager.dynamodb.entity.ApiKey;
-import lombok.RequiredArgsConstructor;
+import com.ech.ff.featureflagmanager.dynamodb.repository.base.DynamoDbRepository;
 import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
-import software.amazon.awssdk.enhanced.dynamodb.Key;
-import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
-import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
 
 import java.util.List;
+import java.util.Optional;
 
+/**
+ * Repository for managing API keys in DynamoDB.
+ */
 @Slf4j
-@RequiredArgsConstructor
-public class ApiKeyRepository {
+public class ApiKeyRepository extends DynamoDbRepository<ApiKey> {
 
-    private final DynamoDbTable<ApiKey> dynamoDbTable;
-
-    public void save(ApiKey apiKey) {
-        log.info("Save new API key: {}", apiKey);
-        dynamoDbTable.putItem(apiKey);
+    /**
+     * Constructs a new ApiKeyRepository.
+     *
+     * @param dynamoDbTable The DynamoDB table for API keys
+     */
+    public ApiKeyRepository(DynamoDbTable<ApiKey> dynamoDbTable) {
+        super(dynamoDbTable);
     }
 
+    /**
+     * Get all API keys for a specific environment.
+     *
+     * @param envName The environment name
+     * @return List of API keys for the environment
+     */
     public List<ApiKey> getEnvKeys(String envName) {
-        QueryConditional queryConditional = QueryConditional.keyEqualTo(
-                Key.builder().partitionValue(envName).build()
-        );
-
-        QueryEnhancedRequest request = QueryEnhancedRequest.builder()
-                .queryConditional(queryConditional)
-                .build();
-
-        return dynamoDbTable.query(request).items().stream().toList();
+        log.info("Getting all API keys for environment: {}", envName);
+        return queryByPartitionKey(envName);
     }
 
+    /**
+     * Get a specific API key by key and environment name.
+     *
+     * @param key The API key
+     * @param envName The environment name
+     * @return The API key if found, otherwise empty
+     */
+    public Optional<ApiKey> getKey(String key, String envName) {
+        log.info("Getting API key: {}, environment: {}", key, envName);
+        return getItem(envName, key);
+    }
+
+    /**
+     * Delete an API key.
+     *
+     * @param key The API key
+     * @param envName The environment name
+     */
     public void deleteKey(String key, String envName) {
-        dynamoDbTable.deleteItem(ApiKey.builder()
-                        .key(key)
-                        .envName(envName)
-                .build());
+        log.info("Deleting API key: {}, environment: {}", key, envName);
+        deleteItem(envName, key);
     }
 }

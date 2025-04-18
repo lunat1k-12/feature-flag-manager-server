@@ -1,47 +1,59 @@
 package com.ech.ff.featureflagmanager.dynamodb.repository;
 
-import com.ech.ff.featureflagmanager.dynamodb.entity.ApiKey;
 import com.ech.ff.featureflagmanager.dynamodb.entity.FeatureFlag;
-import lombok.RequiredArgsConstructor;
+import com.ech.ff.featureflagmanager.dynamodb.repository.base.DynamoDbRepository;
+import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
-import software.amazon.awssdk.enhanced.dynamodb.Key;
-import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
-import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
 
 import java.util.List;
+import java.util.Optional;
 
-@RequiredArgsConstructor
-public class FeatureFlagRepository {
+/**
+ * Repository for managing feature flags in DynamoDB.
+ */
+@Slf4j
+public class FeatureFlagRepository extends DynamoDbRepository<FeatureFlag> {
 
-    private final DynamoDbTable<FeatureFlag> dynamoDbTable;
-
-    public void save(FeatureFlag ff) {
-        dynamoDbTable.putItem(ff);
+    /**
+     * Constructs a new FeatureFlagRepository.
+     *
+     * @param dynamoDbTable The DynamoDB table for feature flags
+     */
+    public FeatureFlagRepository(DynamoDbTable<FeatureFlag> dynamoDbTable) {
+        super(dynamoDbTable);
     }
 
-    public FeatureFlag getByName(String name, String envName) {
-        return dynamoDbTable.getItem(FeatureFlag.builder()
-                        .featureName(name)
-                        .envName(envName)
-                .build());
+    /**
+     * Get a feature flag by name and environment.
+     *
+     * @param name The feature flag name
+     * @param envName The environment name
+     * @return The feature flag if found, otherwise empty
+     */
+    public Optional<FeatureFlag> getByName(String name, String envName) {
+        log.info("Getting feature flag by name: {}, env: {}", name, envName);
+        return getItem(envName, name);
     }
 
+    /**
+     * Get all feature flags for a specific environment.
+     *
+     * @param envName The environment name
+     * @return List of feature flags for the environment
+     */
     public List<FeatureFlag> getEnvFF(String envName) {
-        QueryConditional queryConditional = QueryConditional.keyEqualTo(
-                Key.builder().partitionValue(envName).build()
-        );
-
-        QueryEnhancedRequest request = QueryEnhancedRequest.builder()
-                .queryConditional(queryConditional)
-                .build();
-
-        return dynamoDbTable.query(request).items().stream().toList();
+        log.info("Getting all feature flags for env: {}", envName);
+        return queryByPartitionKey(envName);
     }
 
+    /**
+     * Delete a feature flag.
+     *
+     * @param name The feature flag name
+     * @param envName The environment name
+     */
     public void deleteFF(String name, String envName) {
-        dynamoDbTable.deleteItem(FeatureFlag.builder()
-                        .featureName(name)
-                        .envName(envName)
-                .build());
+        log.info("Deleting feature flag name: {}, env: {}", name, envName);
+        deleteItem(envName, name);
     }
 }
