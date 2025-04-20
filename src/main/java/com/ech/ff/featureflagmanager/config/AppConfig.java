@@ -8,6 +8,8 @@ import com.ech.ff.featureflagmanager.dynamodb.repository.EnvironmentRepository;
 import com.ech.ff.featureflagmanager.dynamodb.repository.FeatureFlagRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.regions.Region;
@@ -43,5 +45,25 @@ public class AppConfig {
     @Bean
     public FeatureFlagRepository buildFeatureFlagRepository(DynamoDbEnhancedClient client) {
         return new FeatureFlagRepository(client.table("FeatureFlag", TableSchema.fromBean(FeatureFlag.class)));
+    }
+
+    /**
+     * Configures CORS to allow requests from any origin.
+     * This effectively disables CORS restrictions for all controllers.
+     *
+     * @return WebMvcConfigurer with CORS configuration
+     */
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/**")
+                        .allowedOrigins("*")
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                        .allowedHeaders("*")
+                        .maxAge(3600);
+            }
+        };
     }
 }
