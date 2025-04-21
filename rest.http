@@ -25,3 +25,22 @@ GET http://localhost:8080/env/key/FIRST_ENV
 
 ### Delete key
 DELETE http://localhost:8080/env/key/FIRST_ENV/238a33d3-0651-4517-9a89-04555933a69b
+
+
+### Feature Flag requests
+### Create feature flag
+POST http://localhost:8080/env/ff
+Content-Type: application/json
+
+{
+  "envName": "FIRST_ENV",
+  "type": "BOOLEAN",
+  "featureName": "dark-mode",
+  "config": "{\"enabled\": true, \"rolloutPercentage\": 100}"
+}
+
+### Get feature flags for environment
+GET http://localhost:8080/env/ff?envName=FIRST_ENV
+
+### Delete feature flag
+DELETE http://localhost:8080/env/ff/FIRST_ENV/dark-mode
