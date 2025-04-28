@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Feature Flag Manager</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .button {
+            display: inline-block;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 16px;
+            margin: 20px 0;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .note {
+            background-color: #f8f9fa;
+            border-left: 4px solid #007bff;
+            padding: 15px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Feature Flag Manager - Login</h1>
+    
+    <p>This application uses AWS Cognito for authentication. Click the button below to log in:</p>
+    
+    <a href="/login" class="button">Log in with AWS Cognito</a>
+    
+    <div class="note">
+        <h3>Note:</h3>
+        <p>After successful authentication, you will be redirected back to this application.</p>
+        <p>If you encounter any issues, please contact your system administrator.</p>
+    </div>
+    
+    <h2>API Access</h2>
+    <p>For programmatic access to the API, you will need to obtain an access token from AWS Cognito and include it in your requests as a Bearer token.</p>
+    
+    <h3>Example:</h3>
+    <pre>
+    curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" https://your-api-endpoint.com/api/resource
+    </pre>
+</body>
+</html>

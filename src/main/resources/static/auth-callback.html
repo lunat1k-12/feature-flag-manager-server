@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Successful - Feature Flag Manager</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+        }
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .button {
+            display: inline-block;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 16px;
+            margin: 20px 0;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+    </style>
+    <script>
+        // This script will parse the URL parameters and display them
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const error = urlParams.get('error');
+            
+            if (error) {
+                document.getElementById('status').innerHTML = 'Authentication Failed: ' + error;
+                document.getElementById('status').className = 'error-message';
+            } else {
+                document.getElementById('status').innerHTML = 'Authentication Successful!';
+            }
+        };
+    </script>
+</head>
+<body>
+    <h1>Feature Flag Manager</h1>
+    
+    <div id="status" class="success-message">Authentication Successful!</div>
+    
+    <p>You have been successfully authenticated with AWS Cognito.</p>
+    <p>You can now close this window and return to the application.</p>
+    
+    <a href="/" class="button">Go to Home Page</a>
+</body>
+</html>
