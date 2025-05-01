@@ -2,6 +2,7 @@ package com.ech.ff.featureflagmanager.dynamodb.repository;
 
 import com.ech.ff.featureflagmanager.dynamodb.entity.Environment;
 import com.ech.ff.featureflagmanager.dynamodb.repository.base.DynamoDbRepository;
+import com.ech.ff.featureflagmanager.security.dto.CognitoUser;
 import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 
@@ -31,6 +32,11 @@ public class EnvironmentRepository extends DynamoDbRepository<Environment> {
     public List<Environment> getAllEnvironments() {
         log.info("Getting all environments");
         return scanAll();
+    }
+
+    public List<Environment> getUserEnvironments(CognitoUser user) {
+        log.info("Getting all environments for user: {}", user.getId());
+        return queryByPartitionKey(user.getId());
     }
 
     /**

@@ -22,6 +22,7 @@ public class FeatureFlag {
     private String type;
     private String featureName;
     private String config;
+    private String userId;
 
     @DynamoDbPartitionKey
     @DynamoDbAttribute("EnvName")
@@ -43,5 +44,10 @@ public class FeatureFlag {
     @DynamoDbAttribute("config")
     public String getConfig() {
         return config;
+    }
+
+    @DynamoDbAttribute("userId")
+    public String getUserId() {
+        return userId;
     }
 }

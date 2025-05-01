@@ -3,6 +3,7 @@ package com.ech.ff.featureflagmanager.controller;
 import com.ech.ff.featureflagmanager.controller.dto.FeatureFlagRequest;
 import com.ech.ff.featureflagmanager.dynamodb.entity.FeatureFlag;
 import com.ech.ff.featureflagmanager.dynamodb.repository.FeatureFlagRepository;
+import com.ech.ff.featureflagmanager.security.dto.CognitoUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -13,6 +14,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -51,13 +54,16 @@ public class FeatureFlagController {
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Feature flag details", 
                                                                  required = true,
                                                                  content = @Content(schema = @Schema(implementation = FeatureFlagRequest.class)))
-            FeatureFlagRequest featureFlag) {
+            FeatureFlagRequest featureFlag,
+            @AuthenticationPrincipal Jwt authentication) {
         log.info("Create FeatureFlag: {}", featureFlag);
+        CognitoUser user = CognitoUser.fromJwt(authentication);
         FeatureFlag ff = FeatureFlag.builder()
                 .envName(featureFlag.getEnvName())
                 .featureName(featureFlag.getFeatureName())
                 .type(featureFlag.getType())
                 .config(featureFlag.getConfig())
+                .userId(user.getId())
                 .build();
         featureFlagRepository.save(ff);
         return ff;
