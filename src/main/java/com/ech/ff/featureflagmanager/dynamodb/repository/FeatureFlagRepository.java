@@ -2,6 +2,7 @@ package com.ech.ff.featureflagmanager.dynamodb.repository;
 
 import com.ech.ff.featureflagmanager.dynamodb.entity.FeatureFlag;
 import com.ech.ff.featureflagmanager.dynamodb.repository.base.DynamoDbRepository;
+import com.ech.ff.featureflagmanager.security.dto.CognitoUser;
 import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 
@@ -41,9 +42,9 @@ public class FeatureFlagRepository extends DynamoDbRepository<FeatureFlag> {
      * @param envName The environment name
      * @return List of feature flags for the environment
      */
-    public List<FeatureFlag> getEnvFF(String envName) {
+    public List<FeatureFlag> getEnvFF(String envName, CognitoUser user) {
         log.info("Getting all feature flags for env: {}", envName);
-        return queryByPartitionKey(envName);
+        return queryByIndex("FFUserId", user.getId(), envName);
     }
 
     /**

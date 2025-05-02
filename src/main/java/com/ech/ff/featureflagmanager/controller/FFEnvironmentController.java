@@ -62,6 +62,8 @@ public class FFEnvironmentController {
                 content = @Content(schema = @Schema(implementation = Environment.class)))
             Environment environment,
             @AuthenticationPrincipal Jwt authentication) {
+        environment.setUserId(CognitoUser.fromJwt(authentication).getId());
+        log.info("Save environment: {}", environment);
         environmentRepository.saveEnvironment(environment);
         return environment;
     }

@@ -8,6 +8,8 @@ import lombok.ToString;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttribute;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecondaryPartitionKey;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecondarySortKey;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortKey;
 
 @Builder
@@ -25,6 +27,7 @@ public class FeatureFlag {
     private String userId;
 
     @DynamoDbPartitionKey
+    @DynamoDbSecondarySortKey(indexNames = {"FFUserId"})
     @DynamoDbAttribute("EnvName")
     public String getEnvName() {
         return envName;
@@ -46,6 +49,7 @@ public class FeatureFlag {
         return config;
     }
 
+    @DynamoDbSecondaryPartitionKey(indexNames = {"FFUserId"})
     @DynamoDbAttribute("userId")
     public String getUserId() {
         return userId;

@@ -80,8 +80,9 @@ public class FeatureFlagController {
     public List<FeatureFlag> getFeatureFlags(
             @RequestParam 
             @Parameter(description = "Name of the environment", example = "production", required = true) 
-            String envName) {
-        return featureFlagRepository.getEnvFF(envName);
+            String envName,
+            @AuthenticationPrincipal Jwt authentication) {
+        return featureFlagRepository.getEnvFF(envName, CognitoUser.fromJwt(authentication));
     }
 
     @DeleteMapping("/{envName}/{featureName}")

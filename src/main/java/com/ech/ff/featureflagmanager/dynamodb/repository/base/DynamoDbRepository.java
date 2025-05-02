@@ -2,6 +2,7 @@ package com.ech.ff.featureflagmanager.dynamodb.repository.base;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbIndex;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.model.Page;
@@ -233,6 +234,107 @@ public abstract class DynamoDbRepository<T> {
         } catch (Exception e) {
             log.error("{}: {}", errorMessage, e.getMessage(), e);
             throw new RuntimeException(errorMessage, e);
+        }
+    }
+
+    /**
+     * Query items by global index using only the partition key.
+     *
+     * @param indexName The name of the global secondary index
+     * @param partitionKey The partition key
+     * @return List of entities matching the query
+     */
+    public List<T> queryByIndex(String indexName, String partitionKey) {
+        return queryByIndex(indexName, partitionKey, (String) null);
+    }
+
+    public List<T> queryByIndex(String indexName, String partitionKey, String sortKey) {
+        return queryByIndex(indexName, partitionKey, QueryConditional.keyEqualTo(Key.builder()
+                        .partitionValue(partitionKey)
+                        .sortValue(sortKey)
+                .build()));
+    }
+
+    /**
+     * Query items by global index.
+     *
+     * @param indexName The name of the global secondary index
+     * @param partitionKey The partition key
+     * @param sortKeyCondition The query conditional for the sort key
+     * @return List of entities matching the query
+     */
+    public List<T> queryByIndex(String indexName, String partitionKey, QueryConditional sortKeyCondition) {
+        log.info("Querying entities by global index: index={}, partitionKey={}", indexName, partitionKey);
+        try {
+            DynamoDbIndex<T> index = dynamoDbTable.index(indexName);
+
+            QueryConditional partitionKeyCondition = QueryConditional.keyEqualTo(
+                    Key.builder().partitionValue(partitionKey).build()
+            );
+
+            QueryEnhancedRequest request = QueryEnhancedRequest.builder()
+                    .queryConditional(sortKeyCondition != null ? sortKeyCondition : partitionKeyCondition)
+                    .build();
+
+            List<T> results = new java.util.ArrayList<>();
+            index.query(request).forEach(page -> results.addAll(page.items()));
+            return results;
+        } catch (Exception e) {
+            log.error("Error querying entities by global index: index={}, partitionKey={}", 
+                    indexName, partitionKey, e);
+            throw new RuntimeException("Failed to query entities by global index", e);
+        }
+    }
+
+    /**
+     * Query items by global index with pagination using only the partition key.
+     *
+     * @param indexName The name of the global secondary index
+     * @param partitionKey The partition key
+     * @param pageSize The number of items per page
+     * @param lastEvaluatedKey The last evaluated key for pagination (can be null for first page)
+     * @return A page of entities matching the query
+     */
+    public Page<T> queryByGlobalIndexPaginated(String indexName, String partitionKey, 
+                                              int pageSize, Map<String, AttributeValue> lastEvaluatedKey) {
+        return queryByGlobalIndexPaginated(indexName, partitionKey, null, pageSize, lastEvaluatedKey);
+    }
+
+    /**
+     * Query items by global index with pagination.
+     *
+     * @param indexName The name of the global secondary index
+     * @param partitionKey The partition key
+     * @param sortKeyCondition The query conditional for the sort key
+     * @param pageSize The number of items per page
+     * @param lastEvaluatedKey The last evaluated key for pagination (can be null for first page)
+     * @return A page of entities matching the query
+     */
+    public Page<T> queryByGlobalIndexPaginated(String indexName, String partitionKey, 
+                                              QueryConditional sortKeyCondition, int pageSize, 
+                                              Map<String, AttributeValue> lastEvaluatedKey) {
+        log.info("Querying entities by global index with pagination: index={}, partitionKey={}, pageSize={}, lastKey={}", 
+                indexName, partitionKey, pageSize, lastEvaluatedKey);
+        try {
+            DynamoDbIndex<T> index = dynamoDbTable.index(indexName);
+
+            QueryConditional partitionKeyCondition = QueryConditional.keyEqualTo(
+                    Key.builder().partitionValue(partitionKey).build()
+            );
+
+            QueryEnhancedRequest.Builder requestBuilder = QueryEnhancedRequest.builder()
+                    .queryConditional(sortKeyCondition != null ? sortKeyCondition : partitionKeyCondition)
+                    .limit(pageSize);
+
+            if (lastEvaluatedKey != null) {
+                requestBuilder.exclusiveStartKey(lastEvaluatedKey);
+            }
+
+            return index.query(requestBuilder.build()).stream().findFirst().orElse(null);
+        } catch (Exception e) {
+            log.error("Error querying entities by global index with pagination: index={}, partitionKey={}, pageSize={}", 
+                    indexName, partitionKey, pageSize, e);
+            throw new RuntimeException("Failed to query entities by global index with pagination", e);
         }
     }
 }
