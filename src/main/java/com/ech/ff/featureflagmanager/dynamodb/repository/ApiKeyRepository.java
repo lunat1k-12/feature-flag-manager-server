@@ -52,9 +52,6 @@ public class ApiKeyRepository extends DynamoDbRepository<ApiKey> {
                             .putExpressionValue(":cognitoUserId", AttributeValue.builder()
                                     .s(cognitoUser.getId())
                                     .build())
-//                            .expressionValues(Map.of("cognitoUserId", AttributeValue.builder()
-//                                            .s(cognitoUser.getId())
-//                                    .build()))
                             .build())
                     .build();
 
