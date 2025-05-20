@@ -3,6 +3,7 @@ package com.ech.ff.featureflagmanager.controller;
 import com.ech.ff.featureflagmanager.controller.dto.GenerateApiKeyRequest;
 import com.ech.ff.featureflagmanager.dynamodb.entity.ApiKey;
 import com.ech.ff.featureflagmanager.dynamodb.repository.ApiKeyRepository;
+import com.ech.ff.featureflagmanager.security.dto.CognitoUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -13,6 +14,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -52,12 +55,14 @@ public class ApiKeysController {
                 description = "Environment for which to generate the API key", 
                 required = true,
                 content = @Content(schema = @Schema(implementation = GenerateApiKeyRequest.class)))
-            GenerateApiKeyRequest request) {
+            GenerateApiKeyRequest request,
+            @AuthenticationPrincipal Jwt jwt) {
         log.info("Generate key request: {}", request);
         ApiKey key = ApiKey.builder()
                 .key(UUID.randomUUID().toString())
                 .envName(request.getEnv())
                 .active(true)
+                .userId(CognitoUser.fromJwt(jwt).getId())
                 .build();
         apiKeyRepository.save(key);
         return key;
@@ -74,9 +79,11 @@ public class ApiKeysController {
     public List<ApiKey> getEnvKeys(
             @PathVariable("envName") 
             @Parameter(description = "Name of the environment", example = "production", required = true)
-            String envName) {
+            String envName,
+            @AuthenticationPrincipal Jwt jwt) {
         log.info("Get env keys request: {}", envName);
-        return apiKeyRepository.getEnvKeys(envName);
+        CognitoUser user = CognitoUser.fromJwt(jwt);
+        return apiKeyRepository.getEnvKeys(envName, user);
     }
 
     @DeleteMapping("/{env}/{key}")

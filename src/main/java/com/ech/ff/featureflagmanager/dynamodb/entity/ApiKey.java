@@ -21,6 +21,7 @@ public class ApiKey {
     private String key;
     private String envName;
     private Boolean active;
+    private String userId;
 
     @DynamoDbSortKey
     @DynamoDbAttribute("key")
@@ -37,5 +38,10 @@ public class ApiKey {
     @DynamoDbAttribute("active")
     public Boolean getActive() {
         return active;
+    }
+
+    @DynamoDbAttribute("userId")
+    public String getUserId() {
+        return userId;
     }
 }

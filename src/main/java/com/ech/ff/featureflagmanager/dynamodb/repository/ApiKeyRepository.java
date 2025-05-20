@@ -2,11 +2,19 @@ package com.ech.ff.featureflagmanager.dynamodb.repository;
 
 import com.ech.ff.featureflagmanager.dynamodb.entity.ApiKey;
 import com.ech.ff.featureflagmanager.dynamodb.repository.base.DynamoDbRepository;
+import com.ech.ff.featureflagmanager.security.dto.CognitoUser;
 import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
+import software.amazon.awssdk.enhanced.dynamodb.Expression;
+import software.amazon.awssdk.enhanced.dynamodb.Key;
+import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
+import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Repository for managing API keys in DynamoDB.
@@ -26,12 +34,35 @@ public class ApiKeyRepository extends DynamoDbRepository<ApiKey> {
     /**
      * Get all API keys for a specific environment.
      *
-     * @param envName The environment name
+     * @param partitionKey The environment name
      * @return List of API keys for the environment
      */
-    public List<ApiKey> getEnvKeys(String envName) {
-        log.info("Getting all API keys for environment: {}", envName);
-        return queryByPartitionKey(envName);
+    public List<ApiKey> getEnvKeys(String partitionKey, CognitoUser cognitoUser) {
+        log.info("Getting all API keys for environment: {}, user: {}", partitionKey, cognitoUser.getId());
+//        return queryByPartitionKey(envName);
+        log.info("Querying entities by partition key: {}", partitionKey);
+        try {
+            QueryConditional queryConditional = QueryConditional.keyEqualTo(
+                    Key.builder().partitionValue(partitionKey).build()
+            );
+
+            QueryEnhancedRequest request = QueryEnhancedRequest.builder()
+                    .queryConditional(queryConditional)
+                    .filterExpression(Expression.builder().expression("userId = :cognitoUserId")
+                            .putExpressionValue(":cognitoUserId", AttributeValue.builder()
+                                    .s(cognitoUser.getId())
+                                    .build())
+//                            .expressionValues(Map.of("cognitoUserId", AttributeValue.builder()
+//                                            .s(cognitoUser.getId())
+//                                    .build()))
+                            .build())
+                    .build();
+
+            return dynamoDbTable.query(request).items().stream().collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("Error querying entities by partition key: {}", partitionKey, e);
+            throw new RuntimeException("Failed to query entities by partition key", e);
+        }
     }
 
     /**
